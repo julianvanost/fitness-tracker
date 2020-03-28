@@ -1,32 +1,34 @@
+const mongoose = require('mongoose')
 const express = require('express')
-const { join } = require('path')
-const passport = require('passport')
-const LocalStrategy = require('passport-local').Strategy
-const { Strategy: JWTStrategy, ExtractJwt } = require('passport-jwt')
-const { User } = require('./models')
+const {join} = require('path')
 const app = express()
 
-
-app.use(express.static(join(__dirname, 'public')))
-app.use(express.urlencoded({ extended: true }))
-app.use(passport.initialize())
-app.use(passport.session())
 app.use(express.json())
+app.use(express.urlencoded({extended: true}))
+app.use(express.static(join(__dirname, 'public')))
 
-passport.use(new LocalStrategy(User.authenticate()))
-passport.serializeUser(User.serializeUser())
-passport.deserializeUser(User.deserializeUser())
-
-passport.use(new JWTStrategy({
-  jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: 'hotdog'
-}, (jwtPayload, cb) => User.findById(jwtPayload.id)
-  .then(user => cb(null, user))
-  .catch(err => cb(err))
-))
-
+//bring in routes
 app.use(require('./routes'))
+//html routes
+//homepage, rendering index.html
+app.get('/', (request, response) => {
+  response.sendFile(join(__dirname, 'public', 'index.html'))
+})
 
-require('./config')
-  .then(() => app.listen(3000))
-  .catch(e => console.error(e))
+//route for exercise.html
+app.get('/exercise', (request, response) => {
+  response.sendFile(join(__dirname, 'public', 'exercise.html'))
+})
+
+//route for stats.html
+app.get('/stats', (request, response) => {
+  response.sendFile(join(__dirname, 'public', 'stats.html'))
+})
+
+mongoose.connect('mongodb://localhost/workout', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useFindAndModify: false
+})
+.then( () => app.listen(process.env.PORT || 3000))
+.catch( error => console.error(error))

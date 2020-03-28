@@ -1,7 +1,3 @@
-const Item = require('./workouts.js')
-const User = require('./User.js')
+const Workout = require('./Workout.js')
 
-module.exports = {
-  Item,
-  User
-}
+module.exports = Workout
